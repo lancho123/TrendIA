@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TrendIA">
+<meta name="description" content="Tendencias del mercado con inteligencia artificial">
+<link rel="manifest" href="manifest.json">
+<title>TrendIA — Mercados & Tendencias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1c2128; --bg4:#21262d;
+  --blue:#58a6ff; --green:#3fb950; --red:#f85149; --amber:#e3b341;
+  --purple:#bc8cff; --cyan:#79c0ff;
+  --text:#e6edf3; --muted:#8b949e; --border:rgba(255,255,255,0.08);
+  --card:#161b22; --sans:'Inter',system-ui,sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.logo{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
+.logo span{color:var(--blue)}
+.header-right{display:flex;align-items:center;gap:0.6rem}
+.live-dot{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted);background:var(--bg3);padding:0.3rem 0.7rem;border-radius:999px;border:1px solid var(--border)}
+.live-dot::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.notif-btn{width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;cursor:pointer}
+
+/* TICKER */
+.ticker{background:var(--bg2);border-bottom:1px solid var(--border);overflow:hidden;height:34px;display:flex;align-items:center;flex-shrink:0}
+.ticker-track{display:flex;gap:2rem;white-space:nowrap;animation:ticker 30s linear infinite;padding:0 1rem}
+.ticker-track:hover{animation-play-state:paused}
+.tick{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;flex-shrink:0}
+.tick-name{color:var(--muted);font-weight:500}
+.tick-val{font-weight:600}
+.tick-chg{font-size:0.65rem}
+.up{color:var(--green)} .dn{color:var(--red)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* MAIN SCROLL */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(4.5rem + var(--safe-bottom))}
+.main::-webkit-scrollbar{display:none}
+
+/* NAV BOTTOM */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding:0.5rem 0;padding-bottom:calc(0.5rem + var(--safe-bottom));z-index:50;flex-shrink:0}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0.35rem 0;cursor:pointer;transition:all .2s}
+.bnav-icon{font-size:1.15rem}
+.bnav-label{font-size:0.62rem;color:var(--muted);font-weight:500}
+.bnav-item.active .bnav-label{color:var(--blue)}
+.bnav-item.active .bnav-icon{filter:drop-shadow(0 0 4px rgba(88,166,255,0.5))}
+
+/* SCREENS */
+.screen{display:none;padding:1rem 1rem 0}
+.screen.active{display:block}
+
+/* SECTION HEADERS */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;margin-top:1.25rem}
+.sec-head:first-child{margin-top:0}
+.sec-title{font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)}
+.sec-more{font-size:0.75rem;color:var(--blue);cursor:pointer}
+
+/* AD BANNER */
+.ad-banner{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.ad-label{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.ad-content{font-size:0.8rem;color:var(--text)}
+.ad-cta{font-size:0.72rem;color:var(--blue);font-weight:500;cursor:pointer}
+
+/* MARKET CARDS SCROLL */
+.markets-scroll{display:flex;gap:0.75rem;overflow-x:auto;padding-bottom:0.5rem;scrollbar-width:none;margin:0 -1rem;padding-left:1rem;padding-right:1rem}
+.markets-scroll::-webkit-scrollbar{display:none}
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;min-width:130px;flex-shrink:0}
+.mcard-name{font-size:0.72rem;color:var(--muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.4rem}
+.mcard-val{font-size:1.2rem;font-weight:700;margin-bottom:0.2rem}
+.mcard-chg{font-size:0.75rem;font-weight:500}
+.mcard-spark{height:32px;margin-top:0.5rem}
+.mcard-spark svg{width:100%;height:100%}
+
+/* NEWS CARDS */
+.news-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:0.75rem;cursor:pointer;transition:border-color .2s}
+.news-card:hover,.news-card:active{border-color:rgba(88,166,255,0.3)}
+.news-meta{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem}
+.news-cat{font-size:0.65rem;font-weight:600;padding:2px 8px;border-radius:999px}
+.cat-finance{background:rgba(59,185,80,0.15);color:var(--green)}
+.cat-tech{background:rgba(88,166,255,0.15);color:var(--blue)}
+.cat-crypto{background:rgba(227,179,65,0.15);color:var(--amber)}
+.cat-negocios{background:rgba(188,140,255,0.15);color:var(--purple)}
+.news-time{font-size:0.68rem;color:var(--muted)}
+.news-title{font-size:0.92rem;font-weight:600;line-height:1.4;margin-bottom:0.4rem}
+.news-excerpt{font-size:0.78rem;color:var(--muted);line-height:1.5}
+.news-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.75rem}
+.news-source{font-size:0.68rem;color:var(--muted)}
+.news-actions{display:flex;gap:0.5rem}
+.news-action{font-size:0.7rem;color:var(--muted);cursor:pointer;padding:3px 8px;border-radius:6px;border:1px solid var(--border);transition:all .2s}
+.news-action:hover{border-color:var(--blue);color:var(--blue)}
+
+/* TREND CARDS */
+.trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+.trend-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;cursor:pointer}
+.trend-rank{font-size:0.65rem;color:var(--muted);margin-bottom:0.4rem}
+.trend-name{font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;line-height:1.3}
+.trend-vol{font-size:0.7rem;color:var(--muted)}
+.trend-bar{height:3px;background:var(--bg4);border-radius:2px;margin-top:0.6rem}
+.trend-fill{height:100%;border-radius:2px;background:var(--blue)}
+
+/* CRYPTO TABLE */
+.crypto-row{display:flex;align-items:center;padding:0.85rem 0;border-bottom:1px solid var(--border)}
+.crypto-row:last-child{border-bottom:none}
+.crypto-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;margin-right:0.75rem}
+.crypto-info{flex:1}
+.crypto-name{font-size:0.88rem;font-weight:600}
+.crypto-sym{font-size:0.72rem;color:var(--muted)}
+.crypto-right{text-align:right}
+.crypto-price{font-size:0.9rem;font-weight:600}
+.crypto-chg{font-size:0.72rem;font-weight:500}
+
+/* AI CHAT */
+.ai-header{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.75rem}
+.ai-avatar{width:40px;height:40px;background:rgba(88,166,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.ai-info h3{font-size:0.9rem;font-weight:600}
+.ai-info p{font-size:0.73rem;color:var(--muted)}
+.ai-status{width:8px;height:8px;background:var(--green);border-radius:50%;margin-top:2px}
+
+.chat-box{height:calc(100vh - 340px);min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:0.65rem;margin-bottom:0.75rem;padding-right:4px}
+.chat-box::-webkit-scrollbar{width:3px}
+.chat-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.cmsg{max-width:85%;padding:0.7rem 0.9rem;border-radius:12px;font-size:0.83rem;line-height:1.5}
+.cmsg.ai{background:var(--bg3);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.cmsg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px;font-weight:500}
+.cmsg.thinking{opacity:0.5;font-style:italic}
+
+.quick-chips{display:flex;gap:0.5rem;overflow-x:auto;scrollbar-width:none;margin-bottom:0.75rem;padding-bottom:2px}
+.quick-chips::-webkit-scrollbar{display:none}
+.chip{background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:0.35rem 0.85rem;font-size:0.73rem;color:var(--muted);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .2s}
+.chip:hover,.chip:active{border-color:var(--blue);color:var(--blue)}
+
+.chat-input-row{display:flex;gap:0.5rem;align-items:flex-end}
+.chat-input-row textarea{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:0.85rem;padding:0.7rem 0.9rem;resize:none;font-family:var(--sans);line-height:1.5;min-height:44px;max-height:100px}
+.chat-input-row textarea:focus{outline:none;border-color:var(--blue)}
+.chat-input-row textarea::placeholder{color:var(--muted)}
+.send-btn{width:44px;height:44px;background:var(--blue);border:none;border-radius:12px;color:#0d1117;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;transition:opacity .2s}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* PORTFOLIO */
+.port-summary{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
+.port-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.port-stat-label{font-size:0.7rem;color:var(--muted);margin-bottom:0.35rem}
+.port-stat-val{font-size:1.3rem;font-weight:700}
+.port-stat-sub{font-size:0.72rem;margin-top:2px}
+
+.asset-row{display:flex;align-items:center;padding:0.85rem 0;border-bottom:1px solid var(--border);gap:0.75rem}
+.asset-row:last-child{border-bottom:none}
+.asset-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.asset-info{flex:1}
+.asset-name{font-size:0.88rem;font-weight:600}
+.asset-qty{font-size:0.72rem;color:var(--muted)}
+.asset-right{text-align:right}
+.asset-val{font-size:0.9rem;font-weight:600}
+.asset-chg{font-size:0.72rem}
+
+/* API BANNER */
+.api-warn{background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.25);border-radius:12px;padding:0.85rem;margin-bottom:0.75rem;font-size:0.78rem;color:var(--amber);line-height:1.5}
+.api-warn strong{display:block;margin-bottom:0.3rem}
+.api-row{display:flex;gap:0.5rem;margin-top:0.5rem}
+.api-row input{flex:1;background:var(--bg3);border:1px solid rgba(227,179,65,0.25);border-radius:8px;color:var(--text);font-size:0.78rem;padding:0.45rem 0.7rem}
+.api-row input:focus{outline:none}
+.api-save{padding:0.45rem 0.9rem;background:var(--amber);border:none;border-radius:8px;color:#1a0e00;font-size:0.78rem;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:0.6rem 1.2rem;border-radius:999px;font-size:0.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* DETAIL MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:1.25rem;border-top:1px solid var(--border)}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1.25rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.8rem;padding:0.3rem 0.7rem;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Trend<span>IA</span></div>
+  <div class="header-right">
+    <div class="live-dot">EN VIVO</div>
+    <div class="notif-btn">🔔</div>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="tick"><span class="tick-name">BTC</span><span class="tick-val up">$107,240</span><span class="tick-chg up">+2.3%</span></div>
+    <div class="tick"><span class="tick-name">ETH</span><span class="tick-val up">$3,891</span><span class="tick-chg up">+1.8%</span></div>
+    <div class="tick"><span class="tick-name">S&P500</span><span class="tick-val up">5,847</span><span class="tick-chg up">+0.4%</span></div>
+    <div class="tick"><span class="tick-name">NASDAQ</span><span class="tick-val dn">18,432</span><span class="tick-chg dn">-0.2%</span></div>
+    <div class="tick"><span class="tick-name">ORO</span><span class="tick-val up">$3,312</span><span class="tick-chg up">+0.6%</span></div>
+    <div class="tick"><span class="tick-name">SOL</span><span class="tick-val up">$178</span><span class="tick-chg up">+4.1%</span></div>
+    <div class="tick"><span class="tick-name">USD/PEN</span><span class="tick-val dn">3.72</span><span class="tick-chg dn">-0.1%</span></div>
+    <div class="tick"><span class="tick-name">NVDA</span><span class="tick-val up">$138.40</span><span class="tick-chg up">+1.9%</span></div>
+    <!-- duplicado para loop -->
+    <div class="tick"><span class="tick-name">BTC</span><span class="tick-val up">$107,240</span><span class="tick-chg up">+2.3%</span></div>
+    <div class="tick"><span class="tick-name">ETH</span><span class="tick-val up">$3,891</span><span class="tick-chg up">+1.8%</span></div>
+    <div class="tick"><span class="tick-name">S&P500</span><span class="tick-val up">5,847</span><span class="tick-chg up">+0.4%</span></div>
+    <div class="tick"><span class="tick-name">NASDAQ</span><span class="tick-val dn">18,432</span><span class="tick-chg dn">-0.2%</span></div>
+    <div class="tick"><span class="tick-name">ORO</span><span class="tick-val up">$3,312</span><span class="tick-chg up">+0.6%</span></div>
+    <div class="tick"><span class="tick-name">SOL</span><span class="tick-val up">$178</span><span class="tick-chg up">+4.1%</span></div>
+    <div class="tick"><span class="tick-name">USD/PEN</span><span class="tick-val dn">3.72</span><span class="tick-chg dn">-0.1%</span></div>
+    <div class="tick"><span class="tick-name">NVDA</span><span class="tick-val up">$138.40</span><span class="tick-chg up">+1.9%</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainScroll">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="screen-home">
+
+    <!-- AD -->
+    <div style="margin-top:0.75rem">
+      <div class="ad-banner">
+        <div><div class="ad-label">Publicidad</div><div class="ad-content">Invierte desde S/50 en fondos indexados</div></div>
+        <div class="ad-cta">Ver más →</div>
+      </div>
+    </div>
+
+    <!-- MARKETS -->
+    <div class="sec-head"><div class="sec-title">Mercados ahora</div><div class="sec-more">Ver todos</div></div>
+    <div class="markets-scroll">
+      <div class="mcard">
+        <div class="mcard-name">🪙 Bitcoin</div>
+        <div class="mcard-val up">$107.2K</div>
+        <div class="mcard-chg up">▲ +2.3% hoy</div>
+        <div class="mcard-spark"><svg viewBox="0 0 80 32"><polyline points="0,28 10,24 20,26 30,18 40,20 50,10 60,12 70,6 80,8" fill="none" stroke="#3fb950" stroke-width="2"/></svg></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-name">📈 S&P 500</div>
+        <div class="mcard-val up">5,847</div>
+        <div class="mcard-chg up">▲ +0.4% hoy</div>
+        <div class="mcard-spark"><svg viewBox="0 0 80 32"><polyline points="0,20 10,22 20,18 30,16 40,18 50,12 60,14 70,10 80,8" fill="none" stroke="#3fb950" stroke-width="2"/></svg></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-name">💎 Ethereum</div>
+        <div class="mcard-val up">$3,891</div>
+        <div class="mcard-chg up">▲ +1.8% hoy</div>
+        <div class="mcard-spark"><svg viewBox="0 0 80 32"><polyline points="0,24 10,22 20,26 30,20 40,14 50,16 60,10 70,8 80,6" fill="none" stroke="#3fb950" stroke-width="2"/></svg></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-name">⚡ NASDAQ</div>
+        <div class="mcard-val dn">18,432</div>
+        <div class="mcard-chg dn">▼ -0.2% hoy</div>
+        <div class="mcard-spark"><svg viewBox="0 0 80 32"><polyline points="0,10 10,12 20,8 30,10 40,14 50,16 60,18 70,20 80,22" fill="none" stroke="#f85149" stroke-width="2"/></svg></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-name">🥇 Oro</div>
+        <div class="mcard-val up">$3,312</div>
+        <div class="mcard-chg up">▲ +0.6% hoy</div>
+        <div class="mcard-spark"><svg viewBox="0 0 80 32"><polyline points="0,22 10,20 20,22 30,18 40,16 50,14 60,12 70,10 80,8" fill="none" stroke="#e3b341" stroke-width="2"/></svg></div>
+      </div>
+    </div>
+
+    <!-- TOP TENDENCIAS -->
+    <div class="sec-head"><div class="sec-title">Tendencias del día</div><div class="sec-more" onclick="showTab('trends')">Ver todas</div></div>
+    <div class="trend-grid">
+      <div class="trend-card" onclick="showToast('📊 Inteligencia Artificial')">
+        <div class="trend-rank">#1 Tecnología</div>
+        <div class="trend-name">Inteligencia Artificial</div>
+        <div class="trend-vol">+340K búsquedas</div>
+        <div class="trend-bar"><div class="trend-fill" style="width:95%;background:var(--blue)"></div></div>
+      </div>
+      <div class="trend-card" onclick="showToast('📊 Bitcoin ETF')">
+        <div class="trend-rank">#2 Finanzas</div>
+        <div class="trend-name">Bitcoin ETF</div>
+        <div class="trend-vol">+218K búsquedas</div>
+        <div class="trend-bar"><div class="trend-fill" style="width:72%;background:var(--amber)"></div></div>
+      </div>
+      <div class="trend-card" onclick="showToast('📊 Startups LatAm')">
+        <div class="trend-rank">#3 Negocios</div>
+        <div class="trend-name">Startups LatAm</div>
+        <div class="trend-vol">+156K búsquedas</div>
+        <div class="trend-bar"><div class="trend-fill" style="width:58%;background:var(--green)"></div></div>
+      </div>
+      <div class="trend-card" onclick="showToast('📊 Energía Solar')">
+        <div class="trend-rank">#4 Sectores</div>
+        <div class="trend-name">Energía Solar</div>
+        <div class="trend-vol">+98K búsquedas</div>
+        <div class="trend-bar"><div class="trend-fill" style="width:42%;background:var(--amber)"></div></div>
+      </div>
+    </div>
+
+    <!-- NOTICIAS -->
+    <div class="sec-head"><div class="sec-title">Últimas noticias</div><div class="sec-more" onclick="showTab('news')">Ver más</div></div>
+    <div id="homeNews"></div>
+
+  </div>
+
+  <!-- NEWS SCREEN -->
+  <div class="screen" id="screen-news">
+    <div style="display:flex;gap:0.5rem;overflow-x:auto;scrollbar-width:none;padding:0.75rem 0;margin-bottom:0.25rem">
+      <button class="chip" style="background:var(--blue);color:#0d1117;border-color:var(--blue)" onclick="filterNews('all')">Todo</button>
+      <button class="chip" onclick="filterNews('finance')">💰 Finanzas</button>
+      <button class="chip" onclick="filterNews('tech')">💻 Tecnología</button>
+      <button class="chip" onclick="filterNews('crypto')">🪙 Cripto</button>
+      <button class="chip" onclick="filterNews('negocios')">🏢 Negocios</button>
+    </div>
+    <div id="newsList"></div>
+  </div>
+
+  <!-- TRENDS SCREEN -->
+  <div class="screen" id="screen-trends">
+    <div style="margin-top:0.75rem">
+      <div class="sec-head"><div class="sec-title">Tendencias globales</div></div>
+      <div id="trendsList"></div>
+
+      <div class="sec-head" style="margin-top:1.5rem"><div class="sec-title">Cripto mercado</div></div>
+      <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.5rem 1rem">
+        <div id="cryptoTable"></div>
+      </div>
+
+      <div style="margin-top:1rem">
+        <div class="ad-banner">
+          <div><div class="ad-label">Publicidad</div><div class="ad-content">Abre tu cuenta en Bróker XYZ sin comisión</div></div>
+          <div class="ad-cta">Abrir →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SCREEN -->
+  <div class="screen" id="screen-ai">
+    <div style="margin-top:0.75rem">
+      <div id="aiApiBanner" class="api-warn" style="display:none">
+        <strong>🔑 Activa el análisis con IA real</strong>
+        Conecta tu API key de Anthropic (gratis en console.anthropic.com) para análisis de mercado en tiempo real.
+        <div class="api-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+          <button class="api-save" onclick="saveApiKey()">Guardar</button>
+        </div>
+      </div>
+      <div class="ai-header">
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-info" style="flex:1">
+          <h3>Analista IA de Mercados</h3>
+          <p>Análisis financiero · Tendencias · Estrategias</p>
+        </div>
+        <div class="ai-status"></div>
+      </div>
+      <div class="chat-box" id="chatBox">
+        <div class="cmsg ai">¡Hola! Soy tu analista de mercados con IA. Puedo ayudarte a entender tendencias, analizar activos, explicar conceptos financieros y darte perspectivas del mercado. ¿Qué quieres analizar hoy? 📊</div>
+      </div>
+      <div class="quick-chips">
+        <div class="chip" onclick="quickAsk('¿Cuáles son las mejores tendencias de inversión en 2026?')">📈 Tendencias 2026</div>
+        <div class="chip" onclick="quickAsk('¿Vale la pena invertir en Bitcoin ahora?')">🪙 ¿Bitcoin ahora?</div>
+        <div class="chip" onclick="quickAsk('¿Cómo empezar a invertir con poco dinero en Latinoamérica?')">💡 Empezar a invertir</div>
+        <div class="chip" onclick="quickAsk('¿Qué sectores económicos van a crecer más este año?')">🚀 Sectores en alza</div>
+        <div class="chip" onclick="quickAsk('Explícame qué es el S&P 500 de forma simple')">📚 ¿Qué es S&P 500?</div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="Pregunta sobre mercados, cripto, negocios..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendChat()">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO SCREEN -->
+  <div class="screen" id="screen-portfolio">
+    <div style="margin-top:0.75rem">
+      <div class="port-summary">
+        <div class="port-stat">
+          <div class="port-stat-label">Portafolio total</div>
+          <div class="port-stat-val">$12,480</div>
+          <div class="port-stat-sub up">▲ +$284 hoy</div>
+        </div>
+        <div class="port-stat">
+          <div class="port-stat-label">Rendimiento</div>
+          <div class="port-stat-val up">+23.4%</div>
+          <div class="port-stat-sub" style="color:var(--muted)">desde inicio</div>
+        </div>
+      </div>
+
+      <div class="ad-banner" style="margin-bottom:1rem">
+        <div><div class="ad-label">Publicidad</div><div class="ad-content">ETF de tecnología con 0% comisión — Hoy</div></div>
+        <div class="ad-cta">Invertir →</div>
+      </div>
+
+      <div class="sec-head"><div class="sec-title">Mis activos</div><div class="sec-more" onclick="showToast('➕ Agregar activo próximamente')">+ Agregar</div></div>
+      <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.25rem 1rem">
+        <div id="assetList"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bnav-item active" onclick="showTab('home')">
+    <div class="bnav-icon">🏠</div><div class="bnav-label">Inicio</div>
+  </div>
+  <div class="bnav-item" onclick="showTab('news')">
+    <div class="bnav-icon">📰</div><div class="bnav-label">Noticias</div>
+  </div>
+  <div class="bnav-item" onclick="showTab('trends')">
+    <div class="bnav-icon">📊</div><div class="bnav-label">Mercados</div>
+  </div>
+  <div class="bnav-item" onclick="showTab('ai')">
+    <div class="bnav-icon">🤖</div><div class="bnav-label">IA</div>
+  </div>
+  <div class="bnav-item" onclick="showTab('portfolio')">
+    <div class="bnav-icon">💼</div><div class="bnav-label">Portafolio</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ---- DATA ----
+const NEWS = [
+  {id:1,cat:'finance',catLabel:'Finanzas',time:'hace 12 min',title:'Reserva Federal mantiene tasas de interés sin cambios en junio',excerpt:'La Fed decidió pausar los aumentos de tasas ante señales mixtas de la economía. Los mercados reaccionaron positivamente.',source:'Reuters'},
+  {id:2,cat:'tech',catLabel:'Tecnología',time:'hace 28 min',title:'NVIDIA supera los $3 billones en capitalización bursátil',excerpt:'La compañía de chips para IA alcanza un nuevo hito histórico impulsada por la demanda de centros de datos de inteligencia artificial.',source:'Bloomberg'},
+  {id:3,cat:'crypto',catLabel:'Cripto',time:'hace 45 min',title:'Bitcoin rompe resistencia de $107,000 con volumen récord',excerpt:'El activo digital más grande del mundo registra su precio más alto en 3 meses, impulsado por flujos institucionales.',source:'CoinDesk'},
+  {id:4,cat:'negocios',catLabel:'Negocios',time:'hace 1h',title:'Startups latinoamericanas recaudan $2.1B en el primer semestre de 2026',excerpt:'El ecosistema emprendedor de América Latina mantiene su momentum a pesar del entorno macroeconómico desafiante.',source:'TechCrunch'},
+  {id:5,cat:'finance',catLabel:'Finanzas',time:'hace 2h',title:'El oro alcanza nuevo máximo histórico ante incertidumbre geopolítica',excerpt:'El metal precioso supera los $3,312 por onza mientras los inversores buscan activos refugio.',source:'FT'},
+  {id:6,cat:'tech',catLabel:'Tecnología',time:'hace 3h',title:'Apple anuncia nuevas funciones de IA para iPhone en WWDC 2026',excerpt:'La compañía presenta herramientas de inteligencia artificial que transformarán la experiencia del usuario en iOS 20.',source:'The Verge'},
+  {id:7,cat:'crypto',catLabel:'Cripto',time:'hace 4h',title:'Ethereum completa actualización que reduce comisiones en 60%',excerpt:'La red más usada para contratos inteligentes mejora su eficiencia y reduce barreras para usuarios en países emergentes.',source:'Decrypt'},
+  {id:8,cat:'negocios',catLabel:'Negocios',time:'hace 5h',title:'Mercado libre anuncia expansión a tres nuevos países de la región',excerpt:'La empresa argentina de e-commerce y fintech aceleraría su presencia en Centroamérica y el Caribe.',source:'El Economista'},
+];
+
+const TRENDS = [
+  {rank:1,name:'Inteligencia Artificial',cat:'Tecnología',vol:'340K',pct:95,color:'var(--blue)',desc:'Agentes de IA autónomos dominan las búsquedas. OpenAI, Anthropic y Google en competencia directa.'},
+  {rank:2,name:'Bitcoin ETF Spot',cat:'Finanzas',vol:'218K',pct:72,color:'var(--amber)',desc:'Los ETFs de Bitcoin superan $120B en activos bajo gestión. Flujos institucionales récord.'},
+  {rank:3,name:'Startups LatAm',cat:'Negocios',vol:'156K',pct:58,color:'var(--green)',desc:'El ecosistema tech latinoamericano atrae capital de riesgo global a tasas crecientes.'},
+  {rank:4,name:'Energía Solar',cat:'Sectores',vol:'98K',pct:42,color:'var(--amber)',desc:'El costo de los paneles solares cae a mínimos históricos, impulsando adopción masiva.'},
+  {rank:5,name:'Comercio Electrónico',cat:'Retail',vol:'87K',pct:38,color:'var(--purple)',desc:'El e-commerce en América Latina crece 28% interanual, superando expectativas del sector.'},
+  {rank:6,name:'Salud Digital',cat:'Salud',vol:'76K',pct:32,color:'var(--cyan)',desc:'Telemedicina y apps de bienestar registran crecimiento de 25% en usuarios activos.'},
+];
+
+const CRYPTO = [
+  {icon:'🟡',name:'Bitcoin',sym:'BTC',price:'$107,240',chg:'+2.3%',up:true},
+  {icon:'💎',name:'Ethereum',sym:'ETH',price:'$3,891',chg:'+1.8%',up:true},
+  {icon:'🟣',name:'Solana',sym:'SOL',price:'$178.40',chg:'+4.1%',up:true},
+  {icon:'🔵',name:'BNB',sym:'BNB',price:'$612',chg:'-0.5%',up:false},
+  {icon:'🟢',name:'XRP',sym:'XRP',price:'$2.84',chg:'+0.9%',up:true},
+  {icon:'🔴',name:'Cardano',sym:'ADA',price:'$0.68',chg:'-1.2%',up:false},
+];
+
+const ASSETS = [
+  {icon:'🟡',name:'Bitcoin',qty:'0.08 BTC',val:'$8,579',chg:'+2.3%',up:true,bg:'rgba(227,179,65,0.15)'},
+  {icon:'💎',name:'Ethereum',qty:'0.6 ETH',val:'$2,335',chg:'+1.8%',up:true,bg:'rgba(188,140,255,0.15)'},
+  {icon:'📈',name:'S&P 500 ETF',qty:'3 cuotas',val:'$1,124',chg:'+0.4%',up:true,bg:'rgba(59,185,80,0.15)'},
+  {icon:'🟣',name:'Solana',qty:'2.4 SOL',val:'$428',chg:'+4.1%',up:true,bg:'rgba(188,140,255,0.15)'},
+];
+
+// ---- RENDER ----
+function renderNewsCard(n, short){
+  return `<div class="news-card" onclick="showToast('📰 ${n.source}')">
+    <div class="news-meta">
+      <span class="news-cat cat-${n.cat}">${n.catLabel}</span>
+      <span class="news-time">${n.time}</span>
+    </div>
+    <div class="news-title">${n.title}</div>
+    ${!short?`<div class="news-excerpt">${n.excerpt}</div>`:''}
+    <div class="news-footer">
+      <span class="news-source">${n.source}</span>
+      <div class="news-actions">
+        <span class="news-action" onclick="event.stopPropagation();showToast('🔖 Guardado')">Guardar</span>
+        <span class="news-action" onclick="event.stopPropagation();showToast('🔗 Enlace copiado')">Compartir</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+document.getElementById('homeNews').innerHTML = NEWS.slice(0,3).map(n=>renderNewsCard(n,false)).join('');
+document.getElementById('newsList').innerHTML = NEWS.map(n=>renderNewsCard(n,false)).join('');
+
+document.getElementById('trendsList').innerHTML = TRENDS.map(t=>`
+  <div class="news-card" onclick="showToast('📊 ${t.name}')">
+    <div class="news-meta">
+      <span class="news-cat" style="background:rgba(88,166,255,0.12);color:var(--blue)">#${t.rank} ${t.cat}</span>
+      <span class="news-time">${t.vol} búsquedas</span>
+    </div>
+    <div class="news-title">${t.name}</div>
+    <div class="news-excerpt">${t.desc}</div>
+    <div class="trend-bar" style="margin-top:0.75rem"><div class="trend-fill" style="width:${t.pct}%;background:${t.color}"></div></div>
+  </div>
+`).join('');
+
+document.getElementById('cryptoTable').innerHTML = CRYPTO.map(c=>`
+  <div class="crypto-row">
+    <div class="crypto-icon" style="background:rgba(255,255,255,0.05)">${c.icon}</div>
+    <div class="crypto-info"><div class="crypto-name">${c.name}</div><div class="crypto-sym">${c.sym}</div></div>
+    <div class="crypto-right">
+      <div class="crypto-price">${c.price}</div>
+      <div class="crypto-chg ${c.up?'up':'dn'}">${c.chg}</div>
+    </div>
+  </div>
+`).join('');
+
+document.getElementById('assetList').innerHTML = ASSETS.map(a=>`
+  <div class="asset-row">
+    <div class="asset-icon" style="background:${a.bg}">${a.icon}</div>
+    <div class="asset-info"><div class="asset-name">${a.name}</div><div class="asset-qty">${a.qty}</div></div>
+    <div class="asset-right"><div class="asset-val">${a.val}</div><div class="asset-chg ${a.up?'up':'dn'}">${a.chg}</div></div>
+  </div>
+`).join('');
+
+// ---- NAVIGATION ----
+function showTab(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  const map={home:0,news:1,trends:2,ai:3,portfolio:4};
+  if(map[id]!==undefined) document.querySelectorAll('.bnav-item')[map[id]].classList.add('active');
+  document.getElementById('mainScroll').scrollTop=0;
+  if(id==='ai') checkApiKey();
+}
+
+function filterNews(cat){
+  const filtered = cat==='all'?NEWS:NEWS.filter(n=>n.cat===cat);
+  document.getElementById('newsList').innerHTML = filtered.map(n=>renderNewsCard(n,false)).join('');
+}
+
+// ---- TOAST ----
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ---- AI CHAT ----
+let chatHistory=[];
+let apiKey=localStorage.getItem('trendia_key')||'';
+
+function checkApiKey(){
+  document.getElementById('aiApiBanner').style.display=apiKey?'none':'block';
+}
+
+function saveApiKey(){
+  const v=document.getElementById('apiKeyInput').value.trim();
+  if(v.startsWith('sk-')){
+    apiKey=v; localStorage.setItem('trendia_key',apiKey);
+    document.getElementById('aiApiBanner').style.display='none';
+    showToast('🔑 API key activada');
+  } else showToast('❌ Clave inválida');
+}
+
+function quickAsk(text){
+  document.getElementById('chatInput').value=text;
+  sendChat();
+}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text) return;
+  input.value='';
+  addChatMsg(text,'user');
+  chatHistory.push({role:'user',content:text});
+  await callAI();
+}
+
+function addChatMsg(text,role){
+  const box=document.getElementById('chatBox');
+  const div=document.createElement('div');
+  div.className='cmsg '+role;
+  div.textContent=text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+  return div;
+}
+
+const DEMOS=[
+  'Las tendencias más fuertes para 2026 son:\n\n1. **IA Agéntica** — sistemas de IA que toman decisiones autónomas. Empresas como Anthropic y OpenAI lideran.\n2. **Energía limpia** — el costo de la solar cayó 89% en 10 años y sigue bajando.\n3. **Finanzas descentralizadas** — Bitcoin superó $100K y los ETFs institucionales aceleran adopción.\n\n¿Quieres profundizar en alguna de estas?',
+  'Para empezar a invertir con poco dinero en Latinoamérica, las mejores opciones son:\n\n💡 **ETFs indexados** (desde $10) — siguen el S&P 500 y dan exposición global\n🪙 **Cripto fraccionada** — puedes comprar $20 de Bitcoin\n📱 **Plataformas locales** — Fintual (Chile/México), Bursatil (Perú), Nuinvest (Brasil)\n\nLa regla más importante: invierte solo lo que no necesitas en 3+ años.',
+  'Bitcoin tiene fundamentos sólidos ahora mismo:\n\n✅ Los ETFs acumulan $120B en activos\n✅ El halving de 2024 redujo la emisión a la mitad\n✅ Adopción institucional en máximos históricos\n\n⚠️ Sin embargo: la volatilidad sigue siendo alta. Nunca inviertas más del 5-10% de tu capital en cripto si eres principiante.',
+];
+
+async function callAI(){
+  const btn=document.getElementById('sendBtn');
+  btn.disabled=true;
+  const thinking=addChatMsg('Analizando mercados...','ai thinking');
+  const system=`Eres un analista experto de mercados financieros y tendencias económicas. Hablas en español, de forma clara, directa y con datos concretos. Cubres: mercados financieros, criptomonedas, tendencias de negocios, economía latinoamericana, inversiones. Tus respuestas son concisas, con emojis para organizar puntos clave, y siempre accionables. Máximo 4 párrafos cortos.`;
+  try {
+    if(!apiKey){
+      await new Promise(r=>setTimeout(r,1000));
+      thinking.remove();
+      const reply=DEMOS[Math.floor(Math.random()*DEMOS.length)];
+      chatHistory.push({role:'assistant',content:reply});
+      addChatMsg(reply,'ai');
+    } else {
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system,messages:chatHistory})
+      });
+      const data=await resp.json();
+      thinking.remove();
+      const reply=data.content?.[0]?.text||'Error al obtener respuesta.';
+      chatHistory.push({role:'assistant',content:reply});
+      addChatMsg(reply,'ai');
+    }
+  } catch(e){
+    thinking.remove();
+    addChatMsg('Error de conexión. Verifica tu API key.','ai');
+  }
+  btn.disabled=false;
+}
+
+// ---- LIVE PRICES (simulado) ----
+function jitter(val, pct){
+  return val*(1+(Math.random()-0.5)*pct/100);
+}
+setInterval(()=>{
+  const cards=document.querySelectorAll('.mcard-val');
+  // pequeña animación de color para simular cambio de precio
+  cards.forEach(c=>{
+    c.style.transition='opacity 0.3s';
+    c.style.opacity='0.6';
+    setTimeout(()=>c.style.opacity='1',300);
+  });
+},8000);
+
+checkApiKey();
+</script>
+</body>
+</html>
+<!-- SW Registration -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(r => console.log('SW ok', r.scope));
+  });
+}
+</script>
